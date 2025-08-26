@@ -176,8 +176,9 @@ RUN echo "=== Verifying installed versions ===" && \
     echo "Checking npm >= 10.9.2: $npm_version" && \
     echo "Checking pnpm >= 10.13.1: $pnpm_version"
 
-# Install nvm (Node Version Manager)
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+# Pre-install nvm for the developer user (will be configured later)
+RUN mkdir -p /home/developer/.nvm && \
+    chown -R developer:developer /home/developer/.nvm
 
 # Install GitHub CLI
 RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | gpg --dearmor -o /usr/share/keyrings/githubcli-archive-keyring.gpg && \
@@ -267,6 +268,16 @@ WORKDIR /home/developer
 # Install oh-my-zsh for zsh (optional, but not default shell)
 RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 
+# Install nvm and Node.js 14.7.6 as developer user
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash && \
+    export NVM_DIR="$HOME/.nvm" && \
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && \
+    nvm install 14.7.6 && \
+    nvm alias node-14 14.7.6 && \
+    echo "=== Node.js 14.7.6 installed ===" && \
+    nvm use 14.7.6 && node --version | grep -q "v14.7.6" && \
+    echo "Node.js 14.7.6 verification successful"
+
 # Install fzf as developer user
 RUN git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf && \
     ~/.fzf/install --all
@@ -283,6 +294,9 @@ RUN echo 'export PS1="\[\033[01;32m\]\u@devcontainer\[\033[00m\]:\[\033[01;34m\]
     echo 'alias gl="git log --oneline --graph"' >> ~/.bashrc && \
     echo 'export PATH="/usr/local/go/bin:$PATH"' >> ~/.bashrc && \
     echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc && \
+    echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc && \
+    echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> ~/.bashrc && \
+    echo '[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"' >> ~/.bashrc && \
     echo 'source ~/.fzf.bash' >> ~/.bashrc
 
 # Configure Git prompt for bash

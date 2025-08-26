@@ -20,11 +20,12 @@ This document outlines the design of a Docker container optimized for HTML5 web 
 ## Core Development Tools
 
 ### Package Management & Build Tools
-- **Node.js 20.x LTS**: Latest LTS version with native ESM support
-- **npm**: Latest version compatible with Node.js 20.x
+- **Node.js 22.x**: Latest version with native ESM support (default)
+- **Node.js 14.7.6**: Legacy version installed via nvm for compatibility
+- **npm**: Latest version compatible with Node.js 22.x
 - **yarn**: Modern package manager with workspace support
-- **pnpm**: Fast, disk space efficient package manager
-- **nvm**: Node Version Manager for switching Node versions if needed
+- **pnpm 10.13.1**: Fast, disk space efficient package manager
+- **nvm**: Node Version Manager for switching between Node.js versions (includes v14.7.6)
 
 ### Version Control
 - **Git**: Latest stable version with LFS support
@@ -122,9 +123,8 @@ This document outlines the design of a Docker container optimized for HTML5 web 
 - **xz**: Compression tool
 
 ### Language Support
-- **Python 3**: For scripting and tooling
-- **Go**: For Go-based tools
-- **Rust**: For Rust-based tools (cargo)
+- **Python 3**: For scripting and tooling (python3, pip3, venv)
+- **Go 1.21.5**: For Go-based tools and development
 
 ### Security & Network Tools
 - **OpenSSL**: Cryptography toolkit
@@ -162,6 +162,24 @@ TZ=UTC
 - Non-root user: `developer` with sudo access
 - UID/GID: 1000 (configurable via build args)
 - Home directory: `/home/developer`
+
+## Node.js Version Management
+
+The container includes multiple Node.js versions:
+- **Node.js 22.x** (system-wide default via apt)
+- **Node.js 14.7.6** (installed via nvm for legacy compatibility)
+
+To switch between versions in the container:
+```bash
+# Use Node.js 14.7.6
+nvm use 14.7.6
+
+# Use system Node.js 22.x
+nvm use system
+
+# Check available versions
+nvm list
+```
 
 ## Optimization Strategies
 
